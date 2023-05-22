@@ -262,6 +262,10 @@ height:window.innerHeight
 let aceeptRatio = canvasScreen.width/canvasScreen.height
 
 const CAMERA = new THREE.PerspectiveCamera(45,aceeptRatio,1,1000)
+
+/**
+ * add axis helper
+ */
 //set camera position
 
 CAMERA.position.z = 5;
@@ -300,9 +304,10 @@ window.addEventListener('resize', () => {
 const planeGeometries = new THREE.PlaneGeometry( 1, 1);
 
 
-const planeMaterial  = new  THREE.MeshBasicMaterial({color:materialColor.color, side: THREE.DoubleSide});
+const planeMaterial  = new  THREE.MeshStandardMaterial({color:materialColor.color, side: THREE.DoubleSide});
 
 const planeMesh = new THREE.Mesh(planeGeometries,planeMaterial);
+planeMesh.receiveShadow=true;
 
 // gui.add(planeMesh.scale,'x').min(5).max(1).step(0.02)
 
@@ -312,29 +317,111 @@ planeMesh.rotation.x=-Math.PI*0.5
 SCENE.add(planeMesh)
 
 const axisHelper =new THREE.AxesHelper();
+axisHelper.visible=false;
 SCENE.add(axisHelper)
 
 
-rendrer.setSize(canvasScreen.width,canvasScreen.height)
-rendrer.render(SCENE,CAMERA)
+rendrer.setSize(canvasScreen.width,canvasScreen.height);
+rendrer.render(SCENE,CAMERA);
+rendrer.shadowMap.enabled=true;
+rendrer.shadowMap.type=THREE.PCFShadowMap
 
 
-
-
+/**
+ * add uniform light across the mesh
+ */
+const ambientLight = new THREE.AmbientLight()
+ambientLight.color.set('rgb(211, 208, 208)');
+ambientLight.intensity=0.25
+SCENE.add(ambientLight)
 //add a sphere geometries 
 
+/**
+ * add direction light
+ */
+const directionLightProperties= {
+    intensity:0.25
+}
+
+const directionLight = new THREE.DirectionalLight();
+directionLight.color.set('white');
+directionLight.intensity=0.25;
+directionLight.position.set(2,2,-1)
+directionLight.castShadow=true;
+directionLight.shadow.mapSize.width=1024;
+directionLight.shadow.mapSize.height=1024;
+directionLight.shadow.camera.near=1;
+directionLight.shadow.camera.far=6;
+directionLight.shadow.radius=2;
+//control the camera size
+
+
+directionLight.shadow.camera.top=2;
+directionLight.shadow.camera.bottom=-2;
+directionLight.shadow.camera.left=-2;
+directionLight.shadow.camera.right=2;
+SCENE.add(directionLight)
+const directionLightCamerahelper = new THREE.CameraHelper(directionLight.shadow.camera);
+
+//hide the camera helper from the scene
+
+
+directionLightCamerahelper.visible=false;
+
+
+SCENE.add(directionLightCamerahelper);
+
+/**
+ * spot light
+ */
+const spotLight = new THREE.SpotLight('red',0.35,10,Math.PI*0.3);
+spotLight.castShadow=true;
+spotLight.position.set(1,4,2);
+spotLight.shadow.mapSize.width=1024;
+spotLight.shadow.mapSize.height=1024;
+spotLight.shadow.camera.near=1;
+spotLight.shadow.camera.far=5;
+spotLight.shadow.camera.fov=30;
+
+
+const spotLightCameraHeper=new THREE.CameraHelper(spotLight.shadow.camera);
+spotLightCameraHeper.visible=false;
+SCENE.add(spotLightCameraHeper)
+SCENE.add(spotLight)
+
+
+/**
+ * point light
+ */
+
+const pointLight = new THREE.PointLight('green',0.3);
+pointLight.position.set(0,1,0);
+pointLight.shadow.mapSize.width=1024;
+pointLight.shadow.mapSize.height=1024;
+pointLight.shadow.camera.near=0.1;
+pointLight.shadow.camera.far=5;
+pointLight.castShadow=true;
+
+const pointLightHelper= new THREE.CameraHelper(pointLight.shadow.camera)
+pointLightHelper.visible=false
+SCENE.add(pointLightHelper)
+SCENE.add(pointLight)
 let sphereSize={
     size:0.5
 }
+
+
 const spherGeometries= new THREE.SphereGeometry(sphereSize.size, 32, 16 );
-const sphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } )
+const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff } )
 
 
 const sphereMesh = new THREE.Mesh()
+
 sphereMesh.geometry=spherGeometries;
 sphereMesh.material=sphereMaterial;
 sphereMesh.position.set(0,0,0)
-planeMesh.position.y= - sphereSize.size
+planeMesh.position.y= - sphereSize.size;
+sphereMesh.castShadow=true;
 SCENE.add(sphereMesh)
 /**
  * instanciatiate dat.gui
@@ -361,6 +448,24 @@ sphereFolder.addColor(materialColor,'color').onChange(() =>  {
 
 //  sphereMesh.position.z=sphereSize.size
 // })
+let directionLightFolder = gui.addFolder('directionLight')
+directionLightFolder.add(directionLight,'intensity').min(0).max(1).step(0.1).setValue(0.25);
+directionLightFolder.addColor(materialColor,'color').onChange(() => {
+    directionLight.color.set(materialColor.color)
+})
+let spotLightFolder = gui.addFolder('spotLight')
+spotLightFolder.add(spotLight,'intensity').min(0).max(1).step(0.1).setValue(0.25);
+spotLightFolder.addColor(materialColor,'color').onChange(() => {
+    spotLight.color.set(materialColor.color)
+})
+let pointLightFolder = gui.addFolder('pointLight')
+pointLightFolder .add(pointLight,'intensity').min(0).max(1).step(0.1).setValue(0.25);
+pointLightFolder .addColor(materialColor,'color').onChange(() => {
+    pointLight.color.set(materialColor.color)
+})
+
+
+//spotLight
 
 const clock = new THREE.Clock()
 const tick = () => {
