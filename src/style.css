@@ -4,5 +4,10 @@
 *{
     margin: 0%;
     padding: 0%;
-    overflow: hidden;
+    /* overflow: hidden; */
+ 
+}
+#canvas{
+position: absolute;
+top: 0%;
 }
