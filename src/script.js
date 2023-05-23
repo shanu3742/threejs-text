@@ -493,7 +493,7 @@ const tick = () => {
     
     sphereMesh.position.y= Math.abs(Math.sin(elapsedTime*2))
     shadowPlane.position.y= planeMesh.position.y+0.01;
-    shadowPlane.material.opacity= 1-Math.abs(sphereMesh.position.y)*0.3
+    shadowPlane.material.opacity= (1-sphereMesh.position.y)*0.3
     rendrer.render(SCENE,CAMERA)
   
 
