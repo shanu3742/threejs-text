@@ -323,7 +323,7 @@ SCENE.add(axisHelper)
 
 rendrer.setSize(canvasScreen.width,canvasScreen.height);
 rendrer.render(SCENE,CAMERA);
-rendrer.shadowMap.enabled=true;
+rendrer.shadowMap.enabled=false;
 rendrer.shadowMap.type=THREE.PCFShadowMap
 
 
@@ -347,46 +347,46 @@ const directionLight = new THREE.DirectionalLight();
 directionLight.color.set('white');
 directionLight.intensity=0.25;
 directionLight.position.set(2,2,-1)
-directionLight.castShadow=true;
-directionLight.shadow.mapSize.width=1024;
-directionLight.shadow.mapSize.height=1024;
-directionLight.shadow.camera.near=1;
-directionLight.shadow.camera.far=6;
-directionLight.shadow.radius=2;
+// directionLight.castShadow=true;
+// directionLight.shadow.mapSize.width=1024;
+// directionLight.shadow.mapSize.height=1024;
+// directionLight.shadow.camera.near=1;
+// directionLight.shadow.camera.far=6;
+// directionLight.shadow.radius=2;
 //control the camera size
 
 
-directionLight.shadow.camera.top=2;
-directionLight.shadow.camera.bottom=-2;
-directionLight.shadow.camera.left=-2;
-directionLight.shadow.camera.right=2;
+// directionLight.shadow.camera.top=2;
+// directionLight.shadow.camera.bottom=-2;
+// directionLight.shadow.camera.left=-2;
+// directionLight.shadow.camera.right=2;
 SCENE.add(directionLight)
-const directionLightCamerahelper = new THREE.CameraHelper(directionLight.shadow.camera);
+// const directionLightCamerahelper = new THREE.CameraHelper(directionLight.shadow.camera);
 
 //hide the camera helper from the scene
 
 
-directionLightCamerahelper.visible=false;
+// directionLightCamerahelper.visible=false;
 
 
-SCENE.add(directionLightCamerahelper);
+// SCENE.add(directionLightCamerahelper);
 
 /**
  * spot light
  */
 const spotLight = new THREE.SpotLight('red',0.35,10,Math.PI*0.3);
-spotLight.castShadow=true;
+// spotLight.castShadow=true;
 spotLight.position.set(1,4,2);
-spotLight.shadow.mapSize.width=1024;
-spotLight.shadow.mapSize.height=1024;
-spotLight.shadow.camera.near=1;
-spotLight.shadow.camera.far=5;
-spotLight.shadow.camera.fov=30;
+// spotLight.shadow.mapSize.width=1024;
+// spotLight.shadow.mapSize.height=1024;
+// spotLight.shadow.camera.near=1;
+// spotLight.shadow.camera.far=5;
+// spotLight.shadow.camera.fov=30;
 
 
-const spotLightCameraHeper=new THREE.CameraHelper(spotLight.shadow.camera);
-spotLightCameraHeper.visible=false;
-SCENE.add(spotLightCameraHeper)
+// const spotLightCameraHeper=new THREE.CameraHelper(spotLight.shadow.camera);
+// spotLightCameraHeper.visible=false;
+// SCENE.add(spotLightCameraHeper)
 SCENE.add(spotLight)
 
 
@@ -396,15 +396,15 @@ SCENE.add(spotLight)
 
 const pointLight = new THREE.PointLight('green',0.3);
 pointLight.position.set(0,1,0);
-pointLight.shadow.mapSize.width=1024;
-pointLight.shadow.mapSize.height=1024;
-pointLight.shadow.camera.near=0.1;
-pointLight.shadow.camera.far=5;
-pointLight.castShadow=true;
+// pointLight.shadow.mapSize.width=1024;
+// pointLight.shadow.mapSize.height=1024;
+// pointLight.shadow.camera.near=0.1;
+// pointLight.shadow.camera.far=5;
+// pointLight.castShadow=true;
 
-const pointLightHelper= new THREE.CameraHelper(pointLight.shadow.camera)
-pointLightHelper.visible=false
-SCENE.add(pointLightHelper)
+// const pointLightHelper= new THREE.CameraHelper(pointLight.shadow.camera)
+// pointLightHelper.visible=false
+// SCENE.add(pointLightHelper)
 SCENE.add(pointLight)
 let sphereSize={
     size:0.5
@@ -465,6 +465,19 @@ pointLightFolder .addColor(materialColor,'color').onChange(() => {
 })
 
 
+/**
+ * create plane just above 
+ * the original plane
+ */
+const textureLoader = new THREE.TextureLoader()
+let shadowTexture= textureLoader.load('angryimg1.png')
+const shadowPlaneMaterial= new THREE.MeshBasicMaterial({color:'black',side: THREE.DoubleSide,alphaMap:shadowTexture,transparent:true})
+const shadowPlaneGeometries = new THREE.PlaneGeometry(1,1)
+
+const shadowPlane = new THREE.Mesh(shadowPlaneGeometries,shadowPlaneMaterial)
+shadowPlane.rotation.x=-Math.PI*0.5
+SCENE.add(shadowPlane)
+
 //spotLight
 
 const clock = new THREE.Clock()
@@ -473,8 +486,14 @@ const tick = () => {
     requestAnimationFrame(tick );
     controls.update();
     sphereMesh.position.x= Math.cos(elapsedTime)*1.5;
-    sphereMesh.position.z= Math.sin(elapsedTime)*1.5
+   
+    shadowPlane.position.x= Math.cos(elapsedTime)*1.5;
+    sphereMesh.position.z= Math.sin(elapsedTime)*1.5;
+    shadowPlane.position.z= Math.sin(elapsedTime)*1.5;
+    
     sphereMesh.position.y= Math.abs(Math.sin(elapsedTime*2))
+    shadowPlane.position.y= planeMesh.position.y+0.01;
+    shadowPlane.material.opacity= 1-Math.abs(sphereMesh.position.y)*0.3
     rendrer.render(SCENE,CAMERA)
   
 
